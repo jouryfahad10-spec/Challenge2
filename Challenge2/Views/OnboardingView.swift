@@ -62,24 +62,29 @@ struct OnboardingView: View {
                         .font(.headline)
                         .foregroundColor(.white)
                     
-                    HStack(spacing: 12) {
-                        ForEach(LearningDuration.allCases) { duration in
-                            let isSelected = viewModel.selectedDuration == duration
-                            
-                            Button(action: {
-                                viewModel.selectDuration(duration)
-                            }) {
-                                Text(duration.rawValue)
-                                    .font(.body)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(isSelected ? .white : .gray)
-                                    .padding(.horizontal, 26)
-                                    .frame(height: 46)
-                                    .liquidGlass(in: Capsule(),
-                                                 tint: isSelected ? .orange : nil,
-                                                 interactive: true)
+                    GlassEffectContainer(spacing: 8) {
+                        HStack(spacing: 12) {
+                            ForEach(LearningDuration.allCases, id: \.self) { duration in
+                                let isSelected = viewModel.selectedDuration == duration
+                                
+                                Button(action: {
+                                    viewModel.selectDuration(duration)
+                                }) {
+                                    Text(duration.rawValue)
+                                        .font(.body)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(isSelected ? .white : .gray)
+                                        .padding(.horizontal, 26)
+                                        .frame(height: 46)
+                                        .glassEffect(
+                                            .regular
+                                                .tint(isSelected ? .orange : nil)
+                                                .interactive(),
+                                            in: Capsule()
+                                        )
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                 }
@@ -88,25 +93,30 @@ struct OnboardingView: View {
                 
                 // 5. زر البدء السفلي والنص التوضيحي (في النص مثل التصميم)
                 VStack(spacing: 12) {
-                    Button(action: {
-                        // نحفظ الموضوع والمدة أول، وبعدين نقفل الأونبوردنق
-                        savedTopic = viewModel.topicText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        savedDurationRaw = viewModel.selectedDuration.rawValue
-                        
-                        withAnimation {
-                            hasCompletedOnboarding = true
+                    GlassEffectContainer {
+                        Button(action: {
+                            // نحفظ الموضوع والمدة أول، وبعدين نقفل الأونبوردنق
+                            savedTopic = viewModel.topicText.trimmingCharacters(in: .whitespacesAndNewlines)
+                            savedDurationRaw = viewModel.selectedDuration.rawValue
+                            
+                            withAnimation {
+                                hasCompletedOnboarding = true
+                            }
+                        }) {
+                            Text("Start Learning")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .frame(width: 151, height: 46)
+                                .glassEffect(
+                                    .regular
+                                        .tint(viewModel.isStartButtonEnabled ? .orange : Color.orange.opacity(0.4))
+                                        .interactive(),
+                                    in: Capsule()
+                                )
                         }
-                    }) {
-                        Text("Start Learning")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .frame(width: 151, height: 46)
-                            .liquidGlass(in: Capsule(),
-                                         tint: viewModel.isStartButtonEnabled ? .orange : Color.orange.opacity(0.4),
-                                         interactive: true)
+                        .buttonStyle(.plain)
+                        .disabled(!viewModel.isStartButtonEnabled)
                     }
-                    .buttonStyle(.plain)
-                    .disabled(!viewModel.isStartButtonEnabled)
                     
                     Text("You can edit your desire later")
                         .font(.caption)

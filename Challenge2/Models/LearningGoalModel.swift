@@ -10,7 +10,7 @@ import Foundation
 
 // خيارات المدة الزمنية
 
-enum LearningDuration: String, CaseIterable, Identifiable {
+enum LearningDuration: String, CaseIterable, Identifiable, Hashable  {
     case week = "Week"
     case month = "Month"
     case year = "Year"
