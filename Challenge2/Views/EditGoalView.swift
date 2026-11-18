@@ -3,7 +3,7 @@
 //  Challenge2
 //
 //  Created by Aljoury on 06/06/1448 AH.
-//
+
 
 import SwiftUI
 
@@ -22,6 +22,39 @@ struct EditGoalView: View {
         self.viewModel = viewModel
         _topicText = State(initialValue: viewModel.currentTopic)
         _selectedDuration = State(initialValue: viewModel.selectedDuration)
+    }
+    
+    // النص بعد إزالة المسافات الزايدة
+    private var trimmedTopic: String {
+        topicText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
+    // هل المستخدم غيّر الموضوع أو المدة عن الهدف الحالي؟
+    private var hasChanges: Bool {
+        trimmedTopic != viewModel.currentTopic || selectedDuration != viewModel.selectedDuration
+    }
+    
+    // حفظ الهدف الجديد وقفل الشاشة
+    private func saveGoal() {
+        viewModel.updateGoal(newTopic: trimmedTopic, newDuration: selectedDuration)
+        showAlert = false
+        dismiss()
+    }
+    
+    // وش يصير لما تضغطين علامة الصح
+    private func handleConfirm() {
+        guard !trimmedTopic.isEmpty else { return }
+        
+        if viewModel.isGoalEnded {
+            // الهدف خلص: نبدأ هدف جديد على طول بدون تحذير (نفس الهدف أو غيره)
+            saveGoal()
+        } else if hasChanges {
+            // الهدف شغال وغيّرتي فيه: نحذر إن الستريك بيبدأ من جديد
+            showAlert = true
+        } else {
+            // الهدف شغال وما تغيّر شي: نقفل بس
+            dismiss()
+        }
     }
     
     var body: some View {
@@ -49,14 +82,15 @@ struct EditGoalView: View {
                     
                     Spacer()
                     
-                    Button(action: { showAlert = true }) {
+                    Button(action: handleConfirm) {
                         Image(systemName: "checkmark")
                             .font(.title3)
                             .foregroundColor(.black)
                             .padding(10)
-                            .background(Color.orange)
+                            .background(trimmedTopic.isEmpty ? Color.orange.opacity(0.4) : Color.orange)
                             .clipShape(Circle())
                     }
+                    .disabled(trimmedTopic.isEmpty)
                 }
                 .padding(.top, 10)
                 
@@ -136,12 +170,7 @@ struct EditGoalView: View {
                                 .clipShape(Capsule())
                         }
                         
-                        Button(action: {
-                            // **هنا يتم حفظ التعديلات الحقيقية في الـ ViewModel الأساسي!**
-                            viewModel.updateGoal(newTopic: topicText, newDuration: selectedDuration)
-                            showAlert = false
-                            dismiss()
-                        }) {
+                        Button(action: saveGoal) {
                             Text("Update")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
@@ -165,6 +194,7 @@ struct EditGoalView: View {
         }
     }
 }
+
 #Preview {
     EditGoalView(viewModel: ActivityViewModel(topic: "SwiftUI", selectedDuration: .week))
 }
